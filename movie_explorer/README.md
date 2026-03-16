@@ -55,7 +55,7 @@ movie_explorer/
 
 ---
 
-## 🚀 Setup Instructions (Week 1)
+
 
 ### Step 1: Clone / Download the project
 ```bash
@@ -244,44 +244,9 @@ GET http://www.omdbapi.com/?s=batman&type=movie&apikey=183bfd30
 
 ---
 
-## ☁️ Deployment Guide (Render.com)
 
-### Step 1: Add gunicorn to requirements.txt
-```
-gunicorn==21.2.0
-```
 
-### Step 2: Create `render.yaml` OR use web dashboard
-```yaml
-services:
-  - type: web
-    name: moviehub
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app
-    envVars:
-      - key: OMDB_API_KEY
-        value: 183bfd30
-      - key: SECRET_KEY
-        generateValue: true
-```
 
-### Step 3: Push to GitHub & Connect to Render
-1. Create a GitHub repo and push your code
-2. Go to render.com → New Web Service
-3. Connect your GitHub repo
-4. Set environment variables in the dashboard
-5. Click Deploy!
-
-### For PythonAnywhere:
-1. Upload files via the Files tab
-2. Create a new Web App → Flask
-3. Set virtualenv path and WSGI file
-4. Set environment variables in `.env`
-
----
-
-## 🎓 Viva Presentation Points
 
 ### What I Built:
 - Full-stack Python web application using Flask framework
@@ -330,10 +295,4 @@ services:
 7. Check your Dashboard for watching statistics
 8. Create custom Collections to organize your movies
 
-### Keyboard Shortcuts:
-- `/` - Focus the search bar
-- `Enter` - Submit search
 
----
-
-*Built with ❤️ using Flask + Bootstrap + OMDb API*
