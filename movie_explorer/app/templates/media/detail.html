@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% from 'macros/media_card.html' import media_card %}
+
+{% block title %}{{ media.Title }} ({{ media.Year }}) – MovieHub Explorer{% endblock %}
+
+{% block content %}
+
+{# Helper: handle N/A values from OMDb #}
+{% set poster = media.Poster if media.Poster and media.Poster != 'N/A' else url_for('static', filename='images/no-poster.jpg') %}
+
+<!-- ══════════════════════════════════════════
+     HERO BACKDROP
+══════════════════════════════════════════ -->
+<div class="detail-backdrop py-5"
+     style="background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- POSTER -->
+      <div class="col-md-3 text-center">
+        <img src="{{ poster }}" alt="{{ media.Title }}"
+             class="img-fluid rounded-3 shadow poster-detail"
+             onerror="this.src='{{ url_for('static', filename='images/no-poster.jpg') }}'">
+
+        <!-- Action Buttons (visible only when logged in) -->
+        {% if current_user.is_authenticated %}
+        <div class="d-grid gap-2 mt-3">
+
+          <!-- Watchlist Button -->
+          {% if in_watchlist %}
+            <form action="{{ url_for('user.remove_from_watchlist', imdb_id=media.imdbID) }}" method="POST">
+              <button type="submit" class="btn btn-outline-warning w-100">
+                <i class="bi bi-bookmark-check-fill me-2"></i>In Watchlist
+              </button>
+            </form>
+          {% else %}
+            <form action="{{ url_for('user.add_to_watchlist') }}" method="POST">
+              <input type="hidden" name="imdb_id" value="{{ media.imdbID }}">
+              <input type="hidden" name="title" value="{{ media.Title }}">
+              <input type="hidden" name="year" value="{{ media.Year }}">
+              <input type="hidden" name="poster" value="{{ poster }}">
+              <input type="hidden" name="media_type" value="{{ media.Type }}">
+              <input type="hidden" name="genre" value="{{ media.Genre }}">
+              <button type="submit" class="btn btn-outline-light w-100">
+                <i class="bi bi-bookmark-plus me-2"></i>Add to Watchlist
+              </button>
+            </form>
+          {% endif %}
+
+          <!-- Favorites Button -->
+          {% if in_favorites %}
+            <form action="{{ url_for('user.remove_from_favorites', imdb_id=media.imdbID) }}" method="POST">
+              <button type="submit" class="btn btn-danger w-100">
+                <i class="bi bi-heart-fill me-2"></i>In Favorites
+              </button>
+            </form>
+          {% else %}
+            <form action="{{ url_for('user.add_to_favorites') }}" method="POST">
+              <input type="hidden" name="imdb_id" value="{{ media.imdbID }}">
+              <input type="hidden" name="title" value="{{ media.Title }}">
+              <input type="hidden" name="year" value="{{ media.Year }}">
+              <input type="hidden" name="poster" value="{{ poster }}">
+              <input type="hidden" name="media_type" value="{{ media.Type }}">
+              <input type="hidden" name="genre" value="{{ media.Genre }}">
+              <button type="submit" class="btn btn-outline-danger w-100">
+                <i class="bi bi-heart me-2"></i>Add to Favorites
+              </button>
+            </form>
+          {% endif %}
+
+          <!-- Mark as Watched -->
+          {% if not in_history %}
+            <form action="{{ url_for('user.add_to_history') }}" method="POST">
+              <input type="hidden" name="imdb_id" value="{{ media.imdbID }}">
+              <input type="hidden" name="title" value="{{ media.Title }}">
+              <input type="hidden" name="year" value="{{ media.Year }}">
+              <input type="hidden" name="poster" value="{{ poster }}">
+              <input type="hidden" name="media_type" value="{{ media.Type }}">
+              <input type="hidden" name="genre" value="{{ media.Genre }}">
+              <button type="submit" class="btn btn-outline-success w-100">
+                <i class="bi bi-check2-circle me-2"></i>Mark as Watched
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-success w-100" disabled>
+              <i class="bi bi-check2-circle me-2"></i>Watched ✓
+            </button>
+          {% endif %}
+
+          <!-- Share Button -->
+          <button class="btn btn-outline-secondary w-100" onclick="copyShareLink()">
+            <i class="bi bi-share me-2"></i>Share
+          </button>
+
+        </div>
+        {% else %}
+          <!-- Prompt to login -->
+          <div class="mt-3 p-3 bg-dark rounded-3 text-center">
+            <p class="text-muted small mb-2">Log in to save to your lists</p>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-danger btn-sm w-100">Login / Sign Up</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- DETAILS -->
+      <div class="col-md-9 text-white">
+        <!-- Title & Year -->
+        <div class="d-flex align-items-start gap-3 flex-wrap mb-2">
+          <h1 class="fw-bold mb-0">{{ media.Title }}</h1>
+          <span class="badge bg-secondary fs-6 mt-1">{{ media.Year }}</span>
+          <span class="badge
+            {% if media.Type == 'series' %}bg-info
+            {% else %}bg-danger{% endif %} fs-6 mt-1">
+            {{ media.Type | capitalize }}
+          </span>
+        </div>
+
+        <!-- Ratings Row -->
+        <div class="d-flex flex-wrap gap-3 mb-3">
+          {% if media.imdbRating and media.imdbRating != 'N/A' %}
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+              <i class="bi bi-star-fill me-1"></i>IMDb {{ media.imdbRating }}
+            </span>
+          {% endif %}
+          {% if avg_rating %}
+            <span class="badge bg-success fs-6 px-3 py-2">
+              <i class="bi bi-star-fill me-1"></i>User {{ avg_rating }}/5
+              <small>({{ review_count }} reviews)</small>
+            </span>
+          {% endif %}
+          {% if media.Runtime and media.Runtime != 'N/A' %}
+            <span class="badge bg-secondary fs-6 px-3 py-2">
+              <i class="bi bi-clock me-1"></i>{{ media.Runtime }}
+            </span>
+          {% endif %}
+          {% if media.Rated and media.Rated != 'N/A' %}
+            <span class="badge bg-dark border border-secondary fs-6 px-3 py-2">
+              {{ media.Rated }}
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Genre Tags -->
+        {% if media.Genre and media.Genre != 'N/A' %}
+        <div class="mb-3">
+          {% for genre in media.Genre.split(', ') %}
+            <a href="{{ url_for('main.search', q=genre) }}"
+               class="badge bg-danger bg-opacity-20 text-danger border border-danger me-1 text-decoration-none">
+              {{ genre }}
+            </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Plot -->
+        {% if media.Plot and media.Plot != 'N/A' %}
+        <p class="lead text-light mb-4" style="max-width: 700px;">
+          {{ media.Plot }}
+        </p>
+        {% endif %}
+
+        <!-- Info Grid -->
+        <div class="row g-3">
+          {% if media.Director and media.Director != 'N/A' %}
+          <div class="col-sm-6">
+            <small class="text-muted text-uppercase letter-spacing">Director</small>
+            <p class="mb-0 text-light">{{ media.Director }}</p>
+          </div>
+          {% endif %}
+
+          {% if media.Actors and media.Actors != 'N/A' %}
+          <div class="col-sm-6">
+            <small class="text-muted text-uppercase">Cast</small>
+            <p class="mb-0 text-light">{{ media.Actors }}</p>
+          </div>
+          {% endif %}
+
+          {% if media.Writer and media.Writer != 'N/A' %}
+          <div class="col-sm-6">
+            <small class="text-muted text-uppercase">Writer</small>
+            <p class="mb-0 text-light">{{ media.Writer }}</p>
+          </div>
+          {% endif %}
+
+          {% if media.Language and media.Language != 'N/A' %}
+          <div class="col-sm-6">
+            <small class="text-muted text-uppercase">Language</small>
+            <p class="mb-0 text-light">{{ media.Language }}</p>
+          </div>
+          {% endif %}
+
+          {% if media.Country and media.Country != 'N/A' %}
+          <div class="col-sm-6">
+            <small class="text-muted text-uppercase">Country</small>
+            <p class="mb-0 text-light">{{ media.Country }}</p>
+          </div>
+          {% endif %}
+
+          {% if media.Awards and media.Awards != 'N/A' %}
+          <div class="col-12">
+            <small class="text-muted text-uppercase">Awards</small>
+            <p class="mb-0 text-warning">
+              <i class="bi bi-trophy me-1"></i>{{ media.Awards }}
+            </p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Where to Watch (Simulated) -->
+        <div class="mt-4 p-3 bg-dark rounded-3">
+          <h6 class="text-muted mb-2">
+            <i class="bi bi-display me-2"></i>Where to Watch
+          </h6>
+          <div class="d-flex flex-wrap gap-2">
+            {% set platforms = ['Netflix', 'Amazon Prime', 'Disney+', 'HBO Max', 'Apple TV+'] %}
+            {% for platform in platforms[:3] %}
+              <span class="badge bg-secondary px-3 py-2">{{ platform }}</span>
+            {% endfor %}
+            <span class="badge bg-dark border border-secondary px-3 py-2 text-muted">
+              <i class="bi bi-info-circle me-1"></i>Availability may vary
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     REVIEWS SECTION
+══════════════════════════════════════════ -->
+<div class="container py-5">
+  <div class="row g-5">
+
+    <div class="col-lg-12">
+
+      <!-- Submit Review Form -->
+      {% if current_user.is_authenticated %}
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-pencil-square me-2"></i>
+            {% if user_review %}Edit Your Review{% else %}Write a Review{% endif %}
+          </h5>
+        </div>
+        <div class="card-body">
+          <form action="{{ url_for('user.add_review') }}" method="POST">
+            <input type="hidden" name="imdb_id" value="{{ media.imdbID }}">
+            <input type="hidden" name="title" value="{{ media.Title }}">
+
+            <!-- Star Rating -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Your Rating</label>
+              <div class="star-rating">
+                {% for i in range(1, 6) %}
+                  <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}"
+                         {% if user_review and user_review.rating == i %}checked{% endif %}>
+                  <label for="star{{ i }}" title="{{ i }} star{{ 's' if i > 1 }}">
+                    <i class="bi bi-star-fill"></i>
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Comment -->
+            <div class="mb-3">
+              <label for="comment" class="form-label fw-semibold">Review (Optional)</label>
+              <textarea name="comment" id="comment" class="form-control" rows="3"
+                        placeholder="Share your thoughts about this movie...">{{ user_review.comment if user_review else '' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-send me-2"></i>Submit Review
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Existing Reviews -->
+      <h5 class="fw-bold mb-3">
+        <i class="bi bi-chat-square-text me-2"></i>Community Reviews
+        {% if review_count %}
+          <span class="badge bg-secondary ms-2">{{ review_count }}</span>
+        {% endif %}
+      </h5>
+
+      {% if reviews %}
+        {% for review in reviews %}
+        <div class="card shadow-sm border-0 mb-3">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <strong>{{ review.user.username }}</strong>
+                <div class="text-warning small">
+                  {% for i in range(1, 6) %}
+                    {% if i <= review.rating %}
+                      <i class="bi bi-star-fill"></i>
+                    {% else %}
+                      <i class="bi bi-star"></i>
+                    {% endif %}
+                  {% endfor %}
+                  <span class="text-muted ms-1">({{ review.rating }}/5)</span>
+                </div>
+              </div>
+              <small class="text-muted">
+                {{ review.created_at.strftime('%b %d, %Y') }}
+              </small>
+            </div>
+            {% if review.comment %}
+              <p class="mb-0 text-muted">{{ review.comment }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-chat-dots fs-2 d-block mb-2"></i>
+          No reviews yet. Be the first to review!
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- right sidebar removed per user request -->
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Copy current page URL to clipboard for sharing
+function copyShareLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    alert('Link copied to clipboard! Share with your friends.');
+  }).catch(() => {
+    prompt('Copy this link:', window.location.href);
+  });
+}
+</script>
+{% endblock %}

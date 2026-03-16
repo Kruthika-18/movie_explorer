@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}My Collections – MovieHub Explorer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+      <i class="bi bi-collection-fill text-info me-2"></i>My Collections
+    </h2>
+    <!-- Create Collection Modal Trigger -->
+    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#createModal">
+      <i class="bi bi-plus-circle me-1"></i>New Collection
+    </button>
+  </div>
+
+  {% if collections %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      {% for col in collections %}
+        <div class="col">
+          <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+              <h5 class="fw-bold">
+                <a href="{{ url_for('user.view_collection', collection_id=col.id) }}"
+                   class="text-decoration-none text-dark">{{ col.name }}</a>
+                {% if col.is_public %}
+                  <span class="badge bg-success ms-1 small">Public</span>
+                {% endif %}
+              </h5>
+              {% if col.description %}
+                <p class="text-muted small">{{ col.description }}</p>
+              {% endif %}
+              <small class="text-muted">
+                <i class="bi bi-film me-1"></i>{{ col.items.count() }} items
+                &nbsp;•&nbsp;
+                <i class="bi bi-calendar3 me-1"></i>{{ col.created_at.strftime('%b %d, %Y') }}
+              </small>
+            </div>
+            <div class="card-footer bg-transparent border-0 d-flex gap-2">
+              <a href="{{ url_for('user.view_collection', collection_id=col.id) }}"
+                 class="btn btn-outline-primary btn-sm flex-grow-1">
+                <i class="bi bi-eye me-1"></i>View
+              </a>
+              <form action="{{ url_for('user.delete_collection', collection_id=col.id) }}" method="POST">
+                <button type="submit" class="btn btn-outline-danger btn-sm"
+                        onclick="return confirm('Delete this collection?')">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-collection text-muted" style="font-size:4rem;"></i>
+      <h4 class="mt-3 text-muted">No collections yet</h4>
+      <p class="text-muted">Create custom lists like "Date Night Movies" or "Sci-Fi Classics"!</p>
+      <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-circle me-2"></i>Create First Collection
+      </button>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Create Collection Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Create New Collection</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{{ url_for('user.create_collection') }}" method="POST">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Collection Name *</label>
+            <input type="text" name="name" class="form-control"
+                   placeholder="e.g., Date Night Movies" required maxlength="100">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea name="description" class="form-control" rows="2"
+                      placeholder="Optional description"></textarea>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="is_public" id="isPublic">
+            <label class="form-check-label" for="isPublic">
+              Make this collection public
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-plus-circle me-1"></i>Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

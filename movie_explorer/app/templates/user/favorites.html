@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}My Favorites – MovieHub Explorer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+      <i class="bi bi-heart-fill text-danger me-2"></i>My Favorites
+      <span class="badge bg-secondary ms-2">{{ items|length }}</span>
+    </h2>
+  </div>
+
+  {% if items %}
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
+      {% for item in items %}
+        <div class="col">
+          <div class="card media-card h-100 shadow-sm border-0">
+            <a href="{{ url_for('media.detail', imdb_id=item.imdb_id) }}">
+              <img src="{{ item.poster if item.poster and item.poster != 'N/A' else url_for('static', filename='images/no-poster.jpg') }}"
+                   class="card-img-top poster-img" alt="{{ item.title }}"
+                   onerror="this.src='{{ url_for('static', filename='images/no-poster.jpg') }}'">
+            </a>
+            <div class="card-body p-2">
+              <h6 class="fw-bold mb-1 text-truncate">{{ item.title }}</h6>
+              <small class="text-muted">{{ item.year }}</small>
+              <div class="d-flex gap-1 mt-2">
+                <a href="{{ url_for('media.detail', imdb_id=item.imdb_id) }}"
+                   class="btn btn-outline-primary btn-sm flex-grow-1">View</a>
+                <form action="{{ url_for('user.remove_from_favorites', imdb_id=item.imdb_id) }}" method="POST">
+                  <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-heart text-muted" style="font-size:4rem;"></i>
+      <h4 class="mt-3 text-muted">No favorites yet</h4>
+      <p class="text-muted">Mark movies you love as favorites!</p>
+      <a href="{{ url_for('main.index') }}" class="btn btn-danger">
+        <i class="bi bi-search me-2"></i>Discover Movies
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

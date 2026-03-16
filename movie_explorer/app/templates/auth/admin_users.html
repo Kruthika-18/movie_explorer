@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin – All Users – FlixDB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">
+        <i class="bi bi-shield-lock-fill text-danger me-2"></i>Admin Panel
+      </h2>
+      <p class="text-muted mb-0">All registered user accounts</p>
+    </div>
+    <span class="badge bg-danger fs-6 px-3 py-2">
+      <i class="bi bi-people-fill me-1"></i>{{ total }} Users
+    </span>
+  </div>
+
+  <!-- Users Table -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Joined</th>
+              <th class="text-center">Watchlist</th>
+              <th class="text-center">Favorites</th>
+              <th class="text-center">Watched</th>
+              <th class="text-center">Reviews</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for stat in user_stats %}
+            <tr>
+              <td class="text-muted">{{ loop.index }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <!-- Avatar Circle with first letter -->
+                  <div class="avatar-circle bg-danger text-white">
+                    {{ stat.user.username[0].upper() }}
+                  </div>
+                  <span class="fw-semibold">{{ stat.user.username }}</span>
+                  {% if stat.user.username == 'admin' %}
+                    <span class="badge bg-warning text-dark">Admin</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td class="text-muted">{{ stat.user.email }}</td>
+              <td>
+                <small class="text-muted">
+                  <i class="bi bi-calendar3 me-1"></i>
+                  {{ stat.user.created_at.strftime('%d %b %Y') }}
+                </small>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-info text-dark">{{ stat.watchlist_count }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-danger">{{ stat.favorites_count }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-success">{{ stat.watched_count }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-warning text-dark">{{ stat.reviews_count }}</span>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-4">
+                No users registered yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row g-3 mt-3">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <h3 class="fw-bold text-danger">{{ total }}</h3>
+        <small class="text-muted">Total Users</small>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <h3 class="fw-bold text-info">
+          {{ user_stats | sum(attribute='watchlist_count') }}
+        </h3>
+        <small class="text-muted">Total Watchlist Items</small>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <h3 class="fw-bold text-success">
+          {{ user_stats | sum(attribute='watched_count') }}
+        </h3>
+        <small class="text-muted">Total Movies Watched</small>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <h3 class="fw-bold text-warning">
+          {{ user_stats | sum(attribute='reviews_count') }}
+        </h3>
+        <small class="text-muted">Total Reviews</small>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+.avatar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+</style>
+{% endblock %}

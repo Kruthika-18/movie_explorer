@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% from 'macros/media_card.html' import media_card %}
+
+<title>MovieHub Explorer – Discover Movies & TV Shows</title>
+{% block content %}
+
+<!-- ══════════════════════════════════════════
+     HERO SECTION
+══════════════════════════════════════════ -->
+<section class="hero-section py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-12 text-white">
+        <h1 class="display-4 fw-bold mb-3">
+          Discover Your Next<br>
+          <span class="text-danger">Favorite Movie</span> 🎬
+        </h1>
+        <p class="lead text-muted mb-4">
+          Search millions of movies & TV shows. Build watchlists,
+          track what you've watched, and share with friends.
+        </p>
+
+        <!-- Main Search Bar -->
+        <form action="{{ url_for('main.search') }}" method="GET" class="d-flex gap-2">
+          <input type="text" name="q" class="form-control form-control-lg bg-dark text-white border-secondary"
+                 placeholder="Search for a movie or TV show..." required autocomplete="off">
+          <button type="submit" class="btn btn-danger btn-lg px-4">
+            <i class="bi bi-search"></i>
+          </button>
+        </form>
+
+        <!-- Quick Filter Buttons -->
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          <span class="text-muted me-2">Browse:</span>
+          {% for genre in ['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Thriller'] %}
+            <a href="{{ url_for('main.search', q=genre) }}"
+               class="btn btn-sm btn-outline-secondary">{{ genre }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- right column removed per user request -->
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FEATURED / TRENDING SECTION
+══════════════════════════════════════════ -->
+{% if featured %}
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="bi bi-fire text-danger me-2"></i>Featured Films
+      </h2>
+      <a href="{{ url_for('main.search', q='popular') }}" class="btn btn-outline-danger btn-sm">
+        View All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% for item in featured %}
+        {{ media_card(item) }}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════
+     POPULAR NOW SECTION
+══════════════════════════════════════════ -->
+{% if upcoming %}
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="bi bi-calendar-event text-info me-2"></i>Popular Now
+      </h2>
+      <a href="{{ url_for('main.filter_media') }}" class="btn btn-outline-info btn-sm">
+        Browse All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% for item in upcoming %}
+        {{ media_card(item) }}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════
+     ACTION MOVIES SECTION
+══════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="bi bi-lightning-fill text-danger me-2" style="font-size: 1.8rem;"></i>Action Packed
+      </h2>
+      <a href="{{ url_for('main.search', q='action') }}" class="btn btn-outline-danger btn-sm">
+        View All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% set action_results = [] %}
+      {% if featured %}
+        {% for item in featured[:6] %}
+          {{ media_card(item) }}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     COMEDY MOVIES SECTION
+══════════════════════════════════════════ -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="bi bi-brightness-high-fill text-warning me-2" style="font-size: 1.8rem;"></i>Comedy Gold
+      </h2>
+      <a href="{{ url_for('main.search', q='comedy') }}" class="btn btn-outline-warning btn-sm">
+        View All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% if featured %}
+        {% for item in featured[:6] %}
+          {{ media_card(item) }}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     DRAMA MOVIES SECTION
+══════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="bi bi-heart-fill text-danger me-2" style="font-size: 1.8rem;"></i>Emotional Dramas
+      </h2>
+      <a href="{{ url_for('main.search', q='drama') }}" class="btn btn-outline-danger btn-sm">
+        View All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% if upcoming %}
+        {% for item in upcoming[:6] %}
+          {{ media_card(item) }}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     HORROR & THRILLER SECTION
+══════════════════════════════════════════ -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="bi bi-fire text-danger me-2" style="font-size: 1.8rem;"></i>Thrills & Chills
+      </h2>
+      <a href="{{ url_for('main.search', q='horror') }}" class="btn btn-outline-danger btn-sm">
+        View All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% if featured %}
+        {% for item in featured[:6] %}
+          {{ media_card(item) }}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SCI-FI & FANTASY SECTION
+══════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="bi bi-stars text-info me-2" style="font-size: 1.8rem;"></i>Sci-Fi Worlds
+      </h2>
+      <a href="{{ url_for('main.search', q='sci-fi') }}" class="btn btn-outline-info btn-sm">
+        View All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% if upcoming %}
+        {% for item in upcoming[:6] %}
+          {{ media_card(item) }}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TOP RATED SECTION
+══════════════════════════════════════════ -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="bi bi-award-fill text-warning me-2" style="font-size: 1.8rem;"></i>Top Rated
+      </h2>
+      <a href="{{ url_for('main.search', q='rated') }}" class="btn btn-outline-warning btn-sm">
+        View All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% if featured %}
+        {% for item in featured[:6] %}
+          {{ media_card(item) }}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FEATURES SECTION (if not logged in)
+══════════════════════════════════════════ -->
+{% if not current_user.is_authenticated %}
+<section class="py-5 bg-dark text-white">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-5">Why Choose MovieHub Explorer?</h2>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="p-4">
+          <i class="bi bi-bookmarks-fill text-danger fs-1 mb-3 d-block"></i>
+          <h5 class="fw-bold">Watchlist & Favorites</h5>
+          <p class="text-muted">Save movies to watch later and mark your all-time favorites.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4">
+          <i class="bi bi-star-fill text-warning fs-1 mb-3 d-block"></i>
+          <h5 class="fw-bold">Rate & Review</h5>
+          <p class="text-muted">Share your opinion with 1-5 star ratings and detailed reviews.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4">
+          <i class="bi bi-graph-up text-info fs-1 mb-3 d-block"></i>
+          <h5 class="fw-bold">Personal Dashboard</h5>
+          <p class="text-muted">Track your watching habits with beautiful statistics and charts.</p>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-4">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-danger btn-lg px-5">
+        <i class="bi bi-person-plus me-2"></i>Create Free Account
+      </a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
